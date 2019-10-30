@@ -38,6 +38,11 @@ Provides mime type related methods on top of Python basic ones.
              Mozilla Public License, v. 2.0
     """
 
+    __slots__ = [ "__weakref__", "definitions", "extensions" ]
+    """
+python.org: __slots__ reserves space for the declared variables and prevents
+the automatic creation of __dict__ and __weakref__ for each instance.
+    """
     _weakref_instance = None
     """
 MimeType weakref instance

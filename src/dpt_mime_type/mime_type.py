@@ -174,13 +174,14 @@ Refresh all mime type definitions from the file.
 
     @staticmethod
     def get_instance():
-    #
         """
 Get the MimeType singleton.
 
 :return: (MimeType) Object on success
 :since:  v1.0.0
         """
+
+        # pylint: disable=not-callable
 
         _return = None
 

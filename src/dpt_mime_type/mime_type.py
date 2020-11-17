@@ -88,10 +88,12 @@ looked up.
 
             if (extension in self.extensions and self.extensions[extension] in self.definitions):
                 _return = self.definitions[self.extensions[extension]]
+                if (len(_return) == 1 and "type" in _return): _return = self.definitions[_return['type']]
+
                 if ("type" not in _return): _return['type'] = self.extensions[extension]
             else:
                 mimetype = mimetypes.guess_type("file.{0}".format(extension), False)[0]
-                if (mimetype is not None): _return = { "type": mimetype, "extension": extension, "class": mimetype.split("/")[0] }
+                if (mimetype is not None): _return = { "type": mimetype, "extension": extension }
             #
 
             if (mimetype is not None and mimetype != _return['type']): _return = None
@@ -100,9 +102,13 @@ looked up.
 
             if (mimetype in self.definitions):
                 _return = self.definitions[mimetype]
+                if (len(_return) == 1 and "type" in _return): _return = self.definitions[_return['type']]
+
                 if ("type" not in _return): _return['type'] = mimetype
-            elif (mimetypes.guess_extension(mimetype, False) is not None): _return = { "type": mimetype, "class": mimetype.split("/")[0] }
+            elif (mimetypes.guess_extension(mimetype, False) is not None): _return = { "type": mimetype }
         #
+
+        if (_return is not None and "class" not in _return): _return['class'] = _return['type'].split("/")[0]
 
         return _return
     #
@@ -120,8 +126,12 @@ Returns the list of extensions known for the given mime type.
         _return = [ ]
 
         if (mimetype is not None and mimetype in self.definitions):
-            _return = self.definitions[mimetype].get("extensions", [ ])
-            if (type(_return) is not list): _return = [ _return ]
+            definition = self.get(mimetype = mimetype)
+            _return = definition.get("extensions")
+
+            if (type(_return) is not list and "extension" in definition):
+                _return = [ definition.get("extension") ]
+            #
         #
 
         return _return

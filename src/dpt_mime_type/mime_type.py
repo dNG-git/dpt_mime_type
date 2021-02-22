@@ -23,7 +23,7 @@ import mimetypes
 from dpt_cache import JsonFileContent
 from dpt_logging import LogLine
 from dpt_settings import Settings
-from dpt_threading.instance_lock import InstanceLock
+from dpt_threading import InstanceLock
 
 class MimeType(object):
     """

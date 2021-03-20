@@ -20,10 +20,17 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from weakref import ref
 import mimetypes
 
-from dpt_cache import JsonFileContent
 from dpt_logging import LogLine
-from dpt_settings import Settings
+from dpt_runtime import Settings
 from dpt_threading import InstanceLock
+
+try: from dpt_cache import JsonFileContent
+except ImportError:
+    JsonFileContent = None
+
+    from dpt_file import File
+    from dpt_json import JsonResource
+#
 
 class MimeType(object):
     """
@@ -137,6 +144,36 @@ Returns the list of extensions known for the given mime type.
         return _return
     #
 
+    def _read_from_file(self):
+        """
+Reads all mime type definitions from the file. This method implements a
+fallback to read from the definition file every time called to fix a
+circular dependency with "dpt-cache" and "dpt-vfs".
+
+:return: (mixed) JSON mime type definitions; None on error
+:since:  v1.0.4
+        """
+
+        _return = None
+
+        if (JsonFileContent is not None):
+            _return = JsonFileContent.get("{0}/settings/mime_types.json".format(Settings.get("path_data")))
+        else:
+            file_object = File()
+
+            if (file_object.open("{0}/settings/mime_types.json".format(Settings.get("path_data")), True, "r")):
+                file_content = None
+
+                try: file_content = file_object.read()
+                finally: file_object.close()
+
+                if (file_content is not None): _return = JsonResource.json_to_data(file_content)
+            #
+        #
+
+        return _return
+    #
+
     def refresh(self):
         """
 Refresh all mime type definitions from the file.
@@ -144,7 +181,7 @@ Refresh all mime type definitions from the file.
 :since: v1.0.0
         """
 
-        json_data = JsonFileContent.get("{0}/settings/mime_types.json".format(Settings.get("path_data")))
+        json_data = self._read_from_file()
 
         if (type(json_data) is dict):
             aliases = { }
